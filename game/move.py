@@ -13,4 +13,4 @@ class Move:
         info += (self.ending_square.row, self.ending_square.column)
         return info
 
-    def undo(self, move):
+

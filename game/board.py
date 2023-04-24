@@ -18,6 +18,8 @@ class Board:
         self.position_pieces("white")
         self.position_pieces("black")
         self.previous_move = None
+        self.previous_move_previous_move = None
+        self.next_turn = "white"
 
     def create_squares(self):
         for i in range(Board_Rows):
@@ -46,6 +48,11 @@ class Board:
         if piece.type == "pawn":
             if ending_square.row == 7 or ending_square.row == 0:
                 self.squares[ending_square.row][ending_square.column].piece = Queen(piece.color)
+
+    def undo_pawn_promotion(self, piece, starting_square):
+        if piece.type == "pawn":
+            if starting_square.row == 7 or starting_square.row == 0:
+                self.squares[starting_square.row][starting_square.column].piece = None
 
     def possible_moves(self, piece, row, column, actual=True):
 
@@ -168,8 +175,8 @@ class Board:
             else:
                 accessible_row = 4
 
-            en_passant_moves_available.append((accessible_row, column-1))
-            en_passant_moves_available.append((accessible_row, column+1))
+            en_passant_moves_available.append((accessible_row, column - 1))
+            en_passant_moves_available.append((accessible_row, column + 1))
 
             for move in en_passant_moves_available:
                 move_row = move[0]
@@ -342,8 +349,62 @@ class Board:
 
         piece.has_moved = True
         piece.moves = []
-        self.previous_move = move
+        if self.previous_move is not None:
+            self.previous_move_previous_move = self.previous_move
+            self.previous_move = move
+        else:
+            self.previous_move = move
         self.reset_en_passant(piece)
+
+        if self.next_turn == "white":
+            self.next_turn = "black"
+        else:
+            self.next_turn = "white"
+
+    def undo_move(self, piece, move):
+        starting_square = move.ending_square
+        ending_square = move.starting_square
+
+        en_passant_square_access = self.squares[ending_square.row][ending_square.column]
+
+        if piece.type == "king":
+            if abs(starting_square.column - ending_square.column) == 2:
+                direction_indicator = ending_square.column - starting_square.column
+
+                if direction_indicator == -2:
+                    rook = piece.left_rook
+                    self.undo_move(rook, self.previous_move_previous_move)
+
+                elif direction_indicator == 2:
+                    rook = piece.right_rook
+                    self.undo_move(rook, self.previous_move_previous_move)
+
+        if piece.type == "pawn":
+            dis_moved = ending_square.column - starting_square.column
+            if dis_moved != 0:
+                if en_passant_square_access.not_occupied():
+                    self.squares[starting_square.row][starting_square.column + dis_moved].piece = Pawn("white") if piece.color == "black" \
+                        else Pawn("black")
+                    self.squares[ending_square.row][ending_square.column].piece = piece
+
+        self.undo_pawn_promotion(piece, ending_square)
+
+        self.squares[starting_square.row][starting_square.column].piece = None
+        self.squares[ending_square.row][ending_square.column].piece = piece
+
+        piece.has_moved = False
+
+        self.undo_reset_en_passant()
+        if self.previous_move_previous_move is not None:
+            self.previous_move = self.previous_move_previous_move
+            self.previous_move_previous_move = None
+        else:
+            self.previous_move = None
+
+        if self.next_turn == "white":
+            self.next_turn = "black"
+        else:
+            self.next_turn = "white"
 
     def reset_en_passant(self, piece):
         for row in range(Board_Rows):
@@ -354,6 +415,18 @@ class Board:
 
         if piece.type == "pawn":
             piece.en_passant = True
+
+    def undo_reset_en_passant(self):
+        for row in range(Board_Rows):
+            for column in range(Board_Columns):
+                if self.squares[row][column].piece:
+                    if self.squares[row][column].piece.type == "pawn":
+                        self.squares[row][column].piece.en_passant = False
+
+        if self.previous_move is not None:
+            if self.previous_move.ending_square.piece is not None:
+                if self.previous_move.ending_square.piece.type == "pawn":
+                    self.previous_move.ending_square.piece.en_passant = True
 
     def accessible_move(self, piece, _move_):
         is_accessible = False
@@ -397,3 +470,17 @@ class Board:
                         return False
 
         return True
+
+    def get_valid_moves(self, color):
+        possible_moves = []
+        for i in range(Board_Rows):
+            for j in range(Board_Columns):
+                if self.squares[i][j].occupied_by_ally(color):
+                    piece = self.squares[i][j].piece
+                    piece.moves = []
+                    self.possible_moves(piece, i, j)
+
+                    for move in piece.moves:
+                        possible_moves.append((piece, move))
+
+        return possible_moves

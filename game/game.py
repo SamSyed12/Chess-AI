@@ -10,7 +10,6 @@ class Game:
     def __init__(self):
         self.board = Board()
         self.available_square = None
-        self.next_turn = "white"
         self.chosen_piece = None
         self.display_the_moves = False
         self.previous_square = None
@@ -65,7 +64,7 @@ class Game:
 
         if self.chosen_piece is None:
             if relevant_square.piece is not None:
-                if relevant_square.piece.color == self.next_turn:
+                if relevant_square.piece.color == self.board.next_turn:
                     self.chosen_piece = relevant_square.piece
                     self.board.possible_moves(self.chosen_piece, relevant_square.row, relevant_square.column)
                     self.display_the_moves = True
@@ -94,12 +93,6 @@ class Game:
         self.previous_square = None
         self.next_square = None
 
-        if self.next_turn == "white":
-            self.next_turn = "black"
-        else:
-            self.next_turn = "white"
-
-
     def highlight_previous_move(self, surface):
         if self.board.previous_move:
             starting_square = self.board.previous_move.starting_square
@@ -126,9 +119,9 @@ class Game:
         self.available_square = self.board.squares[row][column]
 
     def checkmate(self, surface):
-        if self.board.is_in_checkmate(self.next_turn):
+        if self.board.is_in_checkmate(self.board.next_turn):
             font = pygame.font.Font(None, 100)
-            text_surface = font.render(self.next_turn + "loses!", True, (255, 0, 0))
+            text_surface = font.render(self.board.next_turn + "loses!", True, (255, 0, 0))
             text_width, text_height = text_surface.get_size()
             text_x = (Screen_Width - text_width) // 2
             text_y = (Screen_Height - text_height) // 2
