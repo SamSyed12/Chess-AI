@@ -18,7 +18,6 @@ class Board:
         self.position_pieces("white")
         self.position_pieces("black")
         self.previous_move = None
-        self.previous_move_previous_move = None
         self.next_turn = "white"
 
     def create_squares(self):
@@ -56,67 +55,67 @@ class Board:
 
     def possible_moves(self, piece, row, column, actual=True):
 
-        def castling():
-            if not piece.has_moved:
-                if self.squares[row][0].occupied_by_ally(piece.color):
-                    if self.squares[row][0].piece.type == "rook":
-                        left_rook = self.squares[row][0].piece
-                        if not left_rook.has_moved:
-                            for col in range(1, 4):
-                                if self.squares[row][col].occupied_by_piece():
-                                    break
-
-                                if col == 3:
-                                    piece.left_rook = left_rook
-                                    starting_square_r = Square(row, 0)
-                                    ending_square_r = Square(row, 3)
-                                    move_rook = Move(starting_square_r, ending_square_r)
-
-                                    starting_square_k = Square(row, column)
-                                    ending_square_k = Square(row, 2)
-                                    move_king = Move(starting_square_k, ending_square_k)
-
-                                    if actual:
-                                        if not self.in_check(left_rook, move_rook):
-                                            left_rook.append_move(move_rook)
-                                    else:
-                                        left_rook.append_move(move_rook)
-
-                                    if actual:
-                                        if not self.in_check(piece, move_king):
-                                            piece.append_move(move_king)
-                                    else:
-                                        piece.append_move(move_king)
-
-                if self.squares[row][7].occupied_by_ally(piece.color):
-                    if self.squares[row][7].piece.type == "rook":
-                        right_rook = self.squares[row][7].piece
-                        if not right_rook.has_moved:
-                            for col in range(5, 7):
-                                if self.squares[row][col].occupied_by_piece():
-                                    break
-
-                                if col == 6:
-                                    piece.right_rook = right_rook
-                                    starting_square_r = Square(row, 7)
-                                    ending_square_r = Square(row, 5)
-                                    move_rook = Move(starting_square_r, ending_square_r)
-
-                                    starting_square_k = Square(row, column)
-                                    ending_square_k = Square(row, 6)
-                                    move_king = Move(starting_square_k, ending_square_k)
-
-                                    if actual:
-                                        if not self.in_check(right_rook, move_rook):
-                                            right_rook.append_move(move_rook)
-                                    else:
-                                        right_rook.append_move(move_rook)
-
-                                    if actual:
-                                        if not self.in_check(piece, move_king):
-                                            piece.append_move(move_king)
-                                    else:
-                                        piece.append_move(move_king)
+        # def castling():
+        #     if not piece.has_moved:
+        #         if self.squares[row][0].occupied_by_ally(piece.color):
+        #             if self.squares[row][0].piece.type == "rook":
+        #                 left_rook = self.squares[row][0].piece
+        #                 if not left_rook.has_moved:
+        #                     for col in range(1, 4):
+        #                         if self.squares[row][col].occupied_by_piece():
+        #                             break
+        #
+        #                         if col == 3:
+        #                             piece.left_rook = left_rook
+        #                             starting_square_r = Square(row, 0)
+        #                             ending_square_r = Square(row, 3)
+        #                             move_rook = Move(starting_square_r, ending_square_r)
+        #
+        #                             starting_square_k = Square(row, column)
+        #                             ending_square_k = Square(row, 2)
+        #                             move_king = Move(starting_square_k, ending_square_k)
+        #
+        #                             if actual:
+        #                                 if not self.in_check(left_rook, move_rook):
+        #                                     left_rook.append_move(move_rook)
+        #                             else:
+        #                                 left_rook.append_move(move_rook)
+        #
+        #                             if actual:
+        #                                 if not self.in_check(piece, move_king):
+        #                                     piece.append_move(move_king)
+        #                             else:
+        #                                 piece.append_move(move_king)
+        #
+        #         if self.squares[row][7].occupied_by_ally(piece.color):
+        #             if self.squares[row][7].piece.type == "rook":
+        #                 right_rook = self.squares[row][7].piece
+        #                 if not right_rook.has_moved:
+        #                     for col in range(5, 7):
+        #                         if self.squares[row][col].occupied_by_piece():
+        #                             break
+        #
+        #                         if col == 6:
+        #                             piece.right_rook = right_rook
+        #                             starting_square_r = Square(row, 7)
+        #                             ending_square_r = Square(row, 5)
+        #                             move_rook = Move(starting_square_r, ending_square_r)
+        #
+        #                             starting_square_k = Square(row, column)
+        #                             ending_square_k = Square(row, 6)
+        #                             move_king = Move(starting_square_k, ending_square_k)
+        #
+        #                             if actual:
+        #                                 if not self.in_check(right_rook, move_rook):
+        #                                     right_rook.append_move(move_rook)
+        #                             else:
+        #                                 right_rook.append_move(move_rook)
+        #
+        #                             if actual:
+        #                                 if not self.in_check(piece, move_king):
+        #                                     piece.append_move(move_king)
+        #                             else:
+        #                                 piece.append_move(move_king)
 
         def pawn_moves():
             vertical_moves_available = []
@@ -158,9 +157,9 @@ class Board:
                 if Square.in_range(move_row, move_column):
                     if self.squares[move_row][move_column].occupied_by_enemy(piece.color):
                         starting_square = Square(row, column)
-                        ending_piece = self.squares[move_row][move_column].piece
-                        ending_square = Square(move_row, move_column, ending_piece)
-                        move = Move(starting_square, ending_square)
+                        captured_piece = self.squares[move_row][move_column].piece
+                        ending_square = Square(move_row, move_column, captured_piece)
+                        move = Move(starting_square, ending_square, captured_piece)
 
                         if actual:
                             if not self.in_check(piece, move):
@@ -168,38 +167,38 @@ class Board:
                         else:
                             piece.append_move(move)
 
-            en_passant_moves_available = []
+            # en_passant_moves_available = []
+            #
+            # if piece.color == "white":
+            #     accessible_row = 3
+            # else:
+            #     accessible_row = 4
 
-            if piece.color == "white":
-                accessible_row = 3
-            else:
-                accessible_row = 4
-
-            en_passant_moves_available.append((accessible_row, column - 1))
-            en_passant_moves_available.append((accessible_row, column + 1))
-
-            for move in en_passant_moves_available:
-                move_row = move[0]
-                move_column = move[1]
-                ending_row = move[0] + piece.direction
-
-                if row == accessible_row:
-                    if Square.in_range(move_row, move_column):
-                        if self.squares[move_row][move_column].occupied_by_enemy(piece.color):
-                            enemy_piece = self.squares[move_row][move_column].piece
-                            if enemy_piece.type == "pawn":
-                                if enemy_piece.en_passant:
-                                    if Square.in_range(ending_row, move_column):
-                                        if self.squares[ending_row][move_column].not_occupied():
-                                            starting_square = Square(row, column)
-                                            ending_square = Square(ending_row, move_column, enemy_piece)
-                                            move = Move(starting_square, ending_square)
-
-                                            if actual:
-                                                if not self.in_check(piece, move):
-                                                    piece.append_move(move)
-                                            else:
-                                                piece.append_move(move)
+            # en_passant_moves_available.append((accessible_row, column - 1))
+            # en_passant_moves_available.append((accessible_row, column + 1))
+            #
+            # for move in en_passant_moves_available:
+            #     move_row = move[0]
+            #     move_column = move[1]
+            #     ending_row = move[0] + piece.direction
+            #
+            #     if row == accessible_row:
+            #         if Square.in_range(move_row, move_column):
+            #             if self.squares[move_row][move_column].occupied_by_enemy(piece.color):
+            #                 enemy_piece = self.squares[move_row][move_column].piece
+            #                 if enemy_piece.type == "pawn":
+            #                     if enemy_piece.en_passant:
+            #                         if Square.in_range(ending_row, move_column):
+            #                             if self.squares[ending_row][move_column].not_occupied():
+            #                                 starting_square = Square(row, column)
+            #                                 ending_square = Square(ending_row, move_column, enemy_piece)
+            #                                 move = Move(starting_square, ending_square)
+            #
+            #                                 if actual:
+            #                                     if not self.in_check(piece, move):
+            #                                         piece.append_move(move)
+            #                                 else:
+            #                                     piece.append_move(move)
 
         def knight_moves():
             moves_available = [
@@ -220,9 +219,9 @@ class Board:
                 if Square.in_range(move_row, move_column):
                     if self.squares[move_row][move_column].occupied_by_enemy_or_empty(piece.color):
                         starting_square = Square(row, column)
-                        ending_piece = self.squares[move_row][move_column].piece
-                        ending_square = Square(move_row, move_column, ending_piece)
-                        move = Move(starting_square, ending_square)
+                        captured_piece = self.squares[move_row][move_column].piece
+                        ending_square = Square(move_row, move_column, captured_piece)
+                        move = Move(starting_square, ending_square, captured_piece)
 
                         if actual:
                             if not self.in_check(piece, move):
@@ -254,9 +253,9 @@ class Board:
 
                         elif self.squares[possible_row][possible_column].occupied_by_enemy(piece.color):
                             starting_square = Square(row, column)
-                            ending_piece = self.squares[possible_row][possible_column].piece
-                            ending_square = Square(possible_row, possible_column, ending_piece)
-                            move = Move(starting_square, ending_square)
+                            captured_piece = self.squares[possible_row][possible_column].piece
+                            ending_square = Square(possible_row, possible_column, captured_piece)
+                            move = Move(starting_square, ending_square, captured_piece)
 
                             if actual:
                                 if not self.in_check(piece, move):
@@ -295,14 +294,15 @@ class Board:
                 if Square.in_range(move_row, move_column):
                     if self.squares[move_row][move_column].occupied_by_enemy_or_empty(piece.color):
                         starting_square = Square(row, column)
-                        ending_square = Square(move_row, move_column)
-                        move = Move(starting_square, ending_square)
+                        captured_piece = self.squares[move_row][move_column].piece
+                        ending_square = Square(move_row, move_column, captured_piece)
+                        move = Move(starting_square, ending_square, captured_piece)
                         if actual:
                             if not self.in_check(piece, move):
                                 piece.append_move(move)
                         else:
                             piece.append_move(move)
-            castling()
+            # castling()
 
         if piece.type == "pawn":
             pawn_moves()
@@ -321,26 +321,26 @@ class Board:
         starting_square = move.starting_square
         ending_square = move.ending_square
 
-        en_passant_square_access = self.squares[ending_square.row][ending_square.column]
-
-        if piece.type == "king":
-            if abs(starting_square.column - ending_square.column) == 2:
-                direction_indicator = ending_square.column - starting_square.column
-
-                if direction_indicator == -2:
-                    rook = piece.left_rook
-                    self.make_move(rook, rook.moves[-1])
-
-                elif direction_indicator == 2:
-                    rook = piece.right_rook
-                    self.make_move(rook, rook.moves[-1])
-
-        if piece.type == "pawn":
-            dis_moved = ending_square.column - starting_square.column
-            if dis_moved != 0:
-                if en_passant_square_access.not_occupied():
-                    self.squares[starting_square.row][starting_square.column + dis_moved].piece = None
-                    self.squares[ending_square.row][ending_square.column].piece = piece
+        # en_passant_square_access = self.squares[ending_square.row][ending_square.column]
+        #
+        # if piece.type == "king":
+        #     if abs(starting_square.column - ending_square.column) == 2:
+        #         direction_indicator = ending_square.column - starting_square.column
+        #
+        #         if direction_indicator == -2:
+        #             rook = piece.left_rook
+        #             self.make_move(rook, rook.moves[-1])
+        #
+        #         elif direction_indicator == 2:
+        #             rook = piece.right_rook
+        #             self.make_move(rook, rook.moves[-1])
+        #
+        # if piece.type == "pawn":
+        #     dis_moved = ending_square.column - starting_square.column
+        #     if dis_moved != 0:
+        #         if en_passant_square_access.not_occupied():
+        #             self.squares[starting_square.row][starting_square.column + dis_moved].piece = None
+        #             self.squares[ending_square.row][ending_square.column].piece = piece
 
         self.squares[starting_square.row][starting_square.column].piece = None
         self.squares[ending_square.row][ending_square.column].piece = piece
@@ -349,12 +349,9 @@ class Board:
 
         piece.has_moved = True
         piece.moves = []
-        if self.previous_move is not None:
-            self.previous_move_previous_move = self.previous_move
-            self.previous_move = move
-        else:
-            self.previous_move = move
-        self.reset_en_passant(piece)
+
+        self.previous_move = move
+        # self.reset_en_passant(piece)
 
         if self.next_turn == "white":
             self.next_turn = "black"
@@ -364,69 +361,67 @@ class Board:
     def undo_move(self, piece, move):
         starting_square = move.ending_square
         ending_square = move.starting_square
+        piece_to_be_returned = move.captured_piece
 
-        en_passant_square_access = self.squares[ending_square.row][ending_square.column]
-
-        if piece.type == "king":
-            if abs(starting_square.column - ending_square.column) == 2:
-                direction_indicator = ending_square.column - starting_square.column
-
-                if direction_indicator == -2:
-                    rook = piece.left_rook
-                    self.undo_move(rook, self.previous_move_previous_move)
-
-                elif direction_indicator == 2:
-                    rook = piece.right_rook
-                    self.undo_move(rook, self.previous_move_previous_move)
-
-        if piece.type == "pawn":
-            dis_moved = ending_square.column - starting_square.column
-            if dis_moved != 0:
-                if en_passant_square_access.not_occupied():
-                    self.squares[starting_square.row][starting_square.column + dis_moved].piece = Pawn("white") if piece.color == "black" \
-                        else Pawn("black")
-                    self.squares[ending_square.row][ending_square.column].piece = piece
+        # en_passant_square_access = self.squares[ending_square.row][ending_square.column]
+        #
+        # if piece.type == "king":
+        #     if abs(starting_square.column - ending_square.column) == 2:
+        #         direction_indicator = ending_square.column - starting_square.column
+        #
+        #         if direction_indicator == -2:
+        #             rook = piece.left_rook
+        #             self.undo_move(rook, self.previous_move_previous_move)
+        #
+        #         elif direction_indicator == 2:
+        #             rook = piece.right_rook
+        #             self.undo_move(rook, self.previous_move_previous_move)
+        #
+        # if piece.type == "pawn":
+        #     dis_moved = ending_square.column - starting_square.column
+        #     if dis_moved != 0:
+        #         if en_passant_square_access.not_occupied():
+        #             self.squares[starting_square.row][starting_square.column + dis_moved].piece = Pawn("white") if piece.color == "black" \
+        #                 else Pawn("black")
+        #             self.squares[ending_square.row][ending_square.column].piece = piece
 
         self.undo_pawn_promotion(piece, ending_square)
 
-        self.squares[starting_square.row][starting_square.column].piece = None
+        self.squares[starting_square.row][starting_square.column].piece = piece_to_be_returned
         self.squares[ending_square.row][ending_square.column].piece = piece
 
         piece.has_moved = False
 
-        self.undo_reset_en_passant()
-        if self.previous_move_previous_move is not None:
-            self.previous_move = self.previous_move_previous_move
-            self.previous_move_previous_move = None
-        else:
-            self.previous_move = None
+        # self.undo_reset_en_passant()
+
+        self.previous_move = None
 
         if self.next_turn == "white":
             self.next_turn = "black"
         else:
             self.next_turn = "white"
 
-    def reset_en_passant(self, piece):
-        for row in range(Board_Rows):
-            for column in range(Board_Columns):
-                if self.squares[row][column].piece:
-                    if self.squares[row][column].piece.type == "pawn":
-                        self.squares[row][column].piece.en_passant = False
-
-        if piece.type == "pawn":
-            piece.en_passant = True
-
-    def undo_reset_en_passant(self):
-        for row in range(Board_Rows):
-            for column in range(Board_Columns):
-                if self.squares[row][column].piece:
-                    if self.squares[row][column].piece.type == "pawn":
-                        self.squares[row][column].piece.en_passant = False
-
-        if self.previous_move is not None:
-            if self.previous_move.ending_square.piece is not None:
-                if self.previous_move.ending_square.piece.type == "pawn":
-                    self.previous_move.ending_square.piece.en_passant = True
+    # def reset_en_passant(self, piece):
+    #     for row in range(Board_Rows):
+    #         for column in range(Board_Columns):
+    #             if self.squares[row][column].piece:
+    #                 if self.squares[row][column].piece.type == "pawn":
+    #                     self.squares[row][column].piece.en_passant = False
+    #
+    #     if piece.type == "pawn":
+    #         piece.en_passant = True
+    #
+    # def undo_reset_en_passant(self):
+    #     for row in range(Board_Rows):
+    #         for column in range(Board_Columns):
+    #             if self.squares[row][column].piece:
+    #                 if self.squares[row][column].piece.type == "pawn":
+    #                     self.squares[row][column].piece.en_passant = False
+    #
+    #     if self.previous_move is not None:
+    #         if self.previous_move.ending_square.piece is not None:
+    #             if self.previous_move.ending_square.piece.type == "pawn":
+    #                 self.previous_move.ending_square.piece.en_passant = True
 
     def accessible_move(self, piece, _move_):
         is_accessible = False
@@ -478,9 +473,15 @@ class Board:
                 if self.squares[i][j].occupied_by_ally(color):
                     piece = self.squares[i][j].piece
                     piece.moves = []
-                    self.possible_moves(piece, i, j)
+                    self.possible_moves(piece, i, j, actual=True)
 
                     for move in piece.moves:
                         possible_moves.append((piece, move))
 
         return possible_moves
+
+    def return_reward(self, color):
+        if self.is_in_checkmate(color):
+            return -1
+        else:
+            return 1

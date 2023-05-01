@@ -1,29 +1,5 @@
-import random
-
 from util import *
 import math
-
-
-def make_random_move(board):
-    possible_moves = []
-    for i in range(Board_Rows):
-        for j in range(Board_Columns):
-            if board.squares[i][j].occupied_by_ally("black"):
-                piece = board.squares[i][j].piece
-                piece.moves = []
-                board.possible_moves(piece, i, j)
-
-                for move in piece.moves:
-                    possible_moves.append((piece, move))
-
-    if len(possible_moves) == 0:
-        return
-    else:
-        random_num = random.randint(0, len(possible_moves) - 1)
-        random_move = possible_moves[random_num]
-        piece = random_move[0]
-        move = random_move[1]
-        board.make_move(piece, move)
 
 
 def evaluation(board, color):
@@ -38,42 +14,100 @@ def evaluation(board, color):
 
             piece_value = square.piece.value
 
-            if square.occupied_by_ally(color):
-                if square.piece.type == 'pawn':
-                    piece_value += pawn_bonus_matrix[i][j]
+            if color == "white":
 
-                elif square.piece.type == 'knight':
-                    piece_value += knight_bonus_matrix[i][j]
+                if square.occupied_by_ally(color):
 
-                elif square.piece.type == 'rook':
-                    piece_value += rook_bonus_matrix[i][j]
+                    if square.piece.type == 'pawn':
+                        piece_value += pawn_bonus_matrix[i][j]
 
-                elif square.piece.type == 'bishop':
-                    piece_value += bishop_bonus_matrix[i][j]
+                    elif square.piece.type == 'knight':
+                        piece_value += knight_bonus_matrix[i][j]
 
-                elif square.piece.type == 'queen':
-                    piece_value += queen_bonus_matrix[i][j]
+                    elif square.piece.type == 'rook':
+                        piece_value += rook_bonus_matrix[i][j]
 
-                elif square.piece.type == 'king':
-                    piece_value += king_bonus_matrix_mid_game[i][j]
+                    elif square.piece.type == 'bishop':
+                        piece_value += bishop_bonus_matrix[i][j]
+
+                    elif square.piece.type == 'queen':
+                        piece_value += queen_bonus_matrix[i][j]
+
+                    elif square.piece.type == 'king':
+                        piece_value += king_bonus_matrix[i][j]
+
+                    for move in square.piece.moves:
+                        if move.ending_square.occupied_by_enemy(color):
+                            piece_value += (move.ending_square.piece.value * -1)
+                else:
+                    if square.piece.type == 'pawn':
+                        piece_value -= black_pawn_matrix[i][j]
+
+                    elif square.piece.type == 'knight':
+                        piece_value -= black_knight_matrix[i][j]
+
+                    elif square.piece.type == 'rook':
+                        piece_value -= black_rook_matrix[i][j]
+
+                    elif square.piece.type == 'bishop':
+                        piece_value -= black_bishop_matrix[i][j]
+
+                    elif square.piece.type == 'queen':
+                        piece_value -= black_queen_matrix[i][j]
+
+                    elif square.piece.type == 'king':
+                        piece_value -= black_king_matrix[i][j]
+
+                    for move in square.piece.moves:
+                        if move.ending_square.occupied_by_ally(color):
+                            piece_value -= (move.ending_square.piece.value * -1)
             else:
-                if square.piece.type == 'pawn':
-                    piece_value -= pawn_bonus_matrix[i][j]
 
-                elif square.piece.type == 'knight':
-                    piece_value -= knight_bonus_matrix[i][j]
+                if square.occupied_by_ally(color):
 
-                elif square.piece.type == 'rook':
-                    piece_value -= rook_bonus_matrix[i][j]
+                    if square.piece.type == 'pawn':
+                        piece_value += black_pawn_matrix[i][j]
 
-                elif square.piece.type == 'bishop':
-                    piece_value -= bishop_bonus_matrix[i][j]
+                    elif square.piece.type == 'knight':
+                        piece_value += black_knight_matrix[i][j]
 
-                elif square.piece.type == 'queen':
-                    piece_value -= queen_bonus_matrix[i][j]
+                    elif square.piece.type == 'rook':
+                        piece_value += black_rook_matrix[i][j]
 
-                elif square.piece.type == 'king':
-                    piece_value -= king_bonus_matrix_mid_game[i][j]
+                    elif square.piece.type == 'bishop':
+                        piece_value += black_bishop_matrix[i][j]
+
+                    elif square.piece.type == 'queen':
+                        piece_value += black_queen_matrix[i][j]
+
+                    elif square.piece.type == 'king':
+                        piece_value += black_king_matrix[i][j]
+
+                    for move in square.piece.moves:
+                        if move.ending_square.occupied_by_enemy(color):
+                            piece_value += (move.ending_square.piece.value * -1)/3
+                else:
+                    if square.piece.type == 'pawn':
+                        piece_value -= pawn_bonus_matrix[i][j]
+
+                    elif square.piece.type == 'knight':
+                        piece_value -= knight_bonus_matrix[i][j]
+
+                    elif square.piece.type == 'rook':
+                        piece_value -= rook_bonus_matrix[i][j]
+
+                    elif square.piece.type == 'bishop':
+                        piece_value -= bishop_bonus_matrix[i][j]
+
+                    elif square.piece.type == 'queen':
+                        piece_value -= queen_bonus_matrix[i][j]
+
+                    elif square.piece.type == 'king':
+                        piece_value -= king_bonus_matrix[i][j]
+
+                    for move in square.piece.moves:
+                        if move.ending_square.occupied_by_ally(color):
+                            piece_value -= (move.ending_square.piece.value * -1)/3
 
             score += piece_value
 
@@ -85,6 +119,7 @@ def minimax(depth, board, next_turn, alpha, beta):
         return evaluation(board, next_turn), None
 
     valid_moves = board.get_valid_moves(next_turn)
+
     if len(valid_moves) == 0:
         return evaluation(board, next_turn), None
 
@@ -121,6 +156,91 @@ def minimax(depth, board, next_turn, alpha, beta):
                 break
 
     return value, best_move
+
+# def max_val(board, depth, alpha, beta, next_turn):
+#     if depth == 0:
+#         return evaluation(board, next_turn)
+#     best_value = -math.inf
+#     possible_moves = board.get_valid_moves(next_turn)
+#
+#     if len(possible_moves) == 0:
+#         return evaluation(board, next_turn)
+#
+#     for move in possible_moves:
+#         piece = move[0]
+#         the_move = move[1]
+#         board.make_move(piece, the_move)
+#         value = min_val(board, depth - 1, alpha, beta, next_turn)
+#         best_value = max(best_value, value)
+#         alpha = max(alpha, best_value)
+#         board.undo_move(piece, the_move)
+#         if alpha >= beta:
+#             break
+#     return best_value
+#
+#
+# def min_val(board, depth, alpha, beta, next_turn):
+#     if depth == 0:
+#         return evaluation(board, next_turn)
+#     best_value = math.inf
+#
+#     possible_moves = board.get_valid_moves(next_turn)
+#
+#     if len(possible_moves) == 0:
+#         return evaluation(board, next_turn)
+#
+#     for move in possible_moves:
+#         piece = move[0]
+#         the_move = move[1]
+#         board.make_move(piece, the_move)
+#         value = max_val(board, depth - 1, alpha, beta, next_turn)
+#         best_value = min(best_value, value)
+#         beta = min(beta, best_value)
+#         board.undo_move(piece, the_move)
+#         if beta <= alpha:
+#             break
+#     return best_value
+#
+#
+# def minimax(depth, board, next_turn):
+#     alpha = -math.inf
+#     beta = math.inf
+#
+#     valid_moves = board.get_valid_moves(next_turn)
+#
+#     max_value = -math.inf
+#     min_value = math.inf
+#
+#     if len(valid_moves) > 0:
+#         best_move = valid_moves[0]
+#
+#         if next_turn == "white":
+#             for move in valid_moves:
+#                 piece = move[0]
+#                 the_move = move[1]
+#                 board.make_move(piece, the_move)
+#                 value = max_val(board, depth, alpha, beta, next_turn)
+#                 if value > max_value:
+#                     max_value = value
+#                     best_move = move
+#                 board.undo_move(piece, the_move)
+#
+#         else:
+#             for move in valid_moves:
+#                 piece = move[0]
+#                 the_move = move[1]
+#                 board.make_move(piece, the_move)
+#                 value = min_val(board, depth, alpha, beta, next_turn)
+#                 if value < min_value:
+#                     min_value = value
+#                     best_move = move
+#                 board.undo_move(piece, the_move)
+#     else:
+#         value = evaluation(board, next_turn)
+#         best_move = None
+#
+#     return value, best_move
+
 
 pawn_bonus_matrix = [
     [0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00],
@@ -177,7 +297,7 @@ queen_bonus_matrix = [
     [-0.20, -0.10, -0.10, -0.05, -0.05, -0.10, -0.10, -0.20]
 ]
 
-king_bonus_matrix_mid_game = [
+king_bonus_matrix = [
     [-0.3, -0.4, -0.4, -0.5, -0.5, -0.4, -0.4, -0.3],
     [-0.3, -0.4, -0.4, -0.5, -0.5, -0.4, -0.4, -0.3],
     [-0.3, -0.4, -0.4, -0.5, -0.5, -0.4, -0.4, -0.3],
@@ -186,17 +306,6 @@ king_bonus_matrix_mid_game = [
     [-0.1, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.1],
     [0.2, 0.2, 0.0, 0.0, 0.0, 0.0, 0.2, 0.2],
     [0.2, 0.3, 0.1, 0.0, 0.0, 0.1, 0.3, 0.2]
-]
-
-king_bonus_matrix_end_game = [
-    [-0.5, -0.4, -0.3, -0.2, -0.2, -0.3, -0.4, -0.5],
-    [-0.3, -0.2, -0.1, 0.0, 0.0, -0.1, -0.2, -0.3],
-    [-0.3, -0.1, 0.2, 0.3, 0.3, 0.2, -0.1, -0.3],
-    [-0.3, -0.1, 0.3, 0.4, 0.4, 0.3, -0.1, -0.3],
-    [-0.3, -0.1, 0.3, 0.4, 0.4, 0.3, -0.1, -0.3],
-    [-0.3, -0.1, 0.2, 0.3, 0.3, 0.2, -0.1, -0.3],
-    [-0.3, -0.3, 0.0, 0.0, 0.0, 0.0, -0.3, -0.3],
-    [-0.5, -0.3, -0.3, -0.3, -0.3, -0.3, -0.3, -0.5],
 ]
 
 
@@ -230,14 +339,10 @@ for i in range(len(black_queen_matrix)):
 
 black_queen_matrix = [[-1 * element for element in row] for row in black_queen_matrix]
 
-black_king_matrix_mid_game = king_bonus_matrix_mid_game[::-1]
-for i in range(len(black_king_matrix_mid_game)):
-    black_king_matrix_mid_game[i] = black_king_matrix_mid_game[i][::-1]
+black_king_matrix = king_bonus_matrix[::-1]
+for i in range(len(black_king_matrix)):
+    black_king_matrix[i] = black_king_matrix[i][::-1]
 
-black_king_matrix_mid_game = [[-1 * element for element in row] for row in black_king_matrix_mid_game]
+black_king_matrix = [[-1 * element for element in row] for row in black_king_matrix]
 
-black_king_matrix_end_game = king_bonus_matrix_end_game[::-1]
-for i in range(len(black_king_matrix_mid_game)):
-    black_king_matrix_end_game[i] = black_king_matrix_end_game[i][::-1]
 
-black_king_matrix_end_game = [[-1 * element for element in row] for row in black_king_matrix_end_game]

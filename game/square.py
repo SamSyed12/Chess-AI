@@ -24,7 +24,7 @@ class Square:
 
     @staticmethod
     def in_range(row, column):
-        if row < 0 or row > 7 or 7 < column > 0:
+        if row < 0 or row > 7 or column > 7 or column < 0:
             return False
         else:
             return True

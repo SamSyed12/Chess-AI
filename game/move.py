@@ -3,9 +3,10 @@ from square import Square
 
 class Move:
 
-    def __init__(self, starting_square, ending_square):
+    def __init__(self, starting_square, ending_square, captured_piece=None):
         self.starting_square = starting_square
         self.ending_square = ending_square
+        self.captured_piece = captured_piece
 
     def __str__(self):
         info = ""
